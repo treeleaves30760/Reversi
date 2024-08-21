@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 
 
 class ReversiEnv(gym.Env):
@@ -24,7 +24,8 @@ class ReversiEnv(gym.Env):
             pygame.display.set_caption('Reversi')
             self.font = pygame.font.Font(None, 36)
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         # 重置遊戲板到初始狀態
         self.board = np.zeros(
             (self.board_size, self.board_size), dtype=np.int8)
@@ -33,7 +34,7 @@ class ReversiEnv(gym.Env):
                    1:center+1] = np.array([[1, -1], [-1, 1]])
         self.current_player = 1
         self.done = False
-        return self.board.copy()
+        return self.board.copy(), {}  # Return observation and info
 
     def step(self, action):
         # 執行一步動作
@@ -50,7 +51,7 @@ class ReversiEnv(gym.Env):
             elif winner == -1:
                 reward -= 100
 
-        return new_board, reward, self.done, info
+        return new_board, reward, self.done, False, info  # Added terminated flag
 
     def get_valid_moves(self):
         # 獲取所有合法移動
@@ -125,9 +126,9 @@ class ReversiEnv(gym.Env):
         else:
             return 0
 
-    def render(self, mode="human"):
+    def render(self):
         # 渲染遊戲狀態
-        if mode != "human" or self.render_mode != "human":
+        if self.render_mode != "human":
             return
 
         self.screen.fill((0, 128, 0))  # 綠色背景
